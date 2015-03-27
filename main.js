@@ -1,4 +1,4 @@
-// nocontext hotlink - master file
+// nocontext hotlink - gerhuyy's edit
 // coded by /u/iGGNoRe
 
 (function () {
@@ -123,7 +123,7 @@
         link.name = id;
         link.onclick = generateShareDrop;
         link.href = 'javascript:void(0)';
-        link.innerHTML = "shareddit";
+        link.innerHTML = "test";
 
         listItem.appendChild(link);
 
@@ -193,6 +193,8 @@
   }
 
   var $ = document.querySelectorAll.bind(document);
+
+    "(http|https)://www.reddit.com/submit(?.+|#.*|)$"
 
   if (document.URL.split('?')[0].split(':')[1] === '//www.reddit.com/submit') {
 

@@ -81,7 +81,7 @@
     var id = '';
     var drop = '';
 
-    if (!comm.classList.contains('shareddit-drop')) {
+    if (!comm.classList.contains('test-drop')) {
 
       id = comm.getAttribute('data-fullname');
 
@@ -97,7 +97,7 @@
 
       comm.getElementsByClassName('flat-list')[0].appendChild(drop);
 
-      comm.className = comm.className + " shareddit-drop";
+      comm.className = comm.className + " test-drop";
 
       this.remove();
 
@@ -113,7 +113,7 @@
 
     for (i; i >= 0; i--) {
 
-      if (!comments[i].classList.contains('shareddit')) {
+      if (!comments[i].classList.contains('test')) {
 
         id = comments[i].getAttribute('data-fullname');
 
@@ -129,7 +129,7 @@
 
         comments[i].getElementsByClassName('flat-list')[0].appendChild(listItem);
 
-        comments[i].className = comments[i].className + " shareddit";
+        comments[i].className = comments[i].className + " test";
 
 
       }
@@ -153,7 +153,7 @@
 
     for (i; i >= 0; i--) {
 
-      if (!entries[i].classList.contains('shareddit') && !entries[i].getElementsByClassName('sponsored-tagline').length && entries[i].getElementsByClassName('title').length) {
+      if (!entries[i].classList.contains('test') && !entries[i].getElementsByClassName('sponsored-tagline').length && entries[i].getElementsByClassName('title').length) {
 
         listingTitle = entries[i].getElementsByTagName('a')[0].innerHTML;
         listingLink = entries[i].getElementsByTagName('a')[0].getAttribute('href');
@@ -177,7 +177,7 @@
         xPost = "<li><a href=\"//www.reddit.com/submit?title=" + listingTitle + "&url=" + listingLink + "/" + dupeBlock + "\">x-post this link</a></li>";
 
         entries[i].getElementsByClassName('flat-list')[0].innerHTML = entries[i].getElementsByClassName('flat-list')[0].innerHTML + xPost;
-        entries[i].className = entries[i].className + " shareddit";
+        entries[i].className = entries[i].className + " test";
 
       }
 

@@ -81,7 +81,7 @@
     var id = '';
     var drop = '';
 
-    if (!comm.classList.contains('test-drop')) {
+    if (!comm.classList.contains('shareddit-drop')) {
 
       id = comm.getAttribute('data-fullname');
 
@@ -97,7 +97,7 @@
 
       comm.getElementsByClassName('flat-list')[0].appendChild(drop);
 
-      comm.className = comm.className + " test-drop";
+      comm.className = comm.className + " shareddit-drop";
 
       this.remove();
 
@@ -113,7 +113,7 @@
 
     for (i; i >= 0; i--) {
 
-      if (!comments[i].classList.contains('test')) {
+      if (!comments[i].classList.contains('shareddit')) {
 
         id = comments[i].getAttribute('data-fullname');
 
@@ -123,29 +123,60 @@
         link.name = id;
         link.onclick = generateShareDrop;
         link.href = 'javascript:void(0)';
-        link.innerHTML = "test";
+        link.innerHTML = "shareddit";
 
         listItem.appendChild(link);
 
         comments[i].getElementsByClassName('flat-list')[0].appendChild(listItem);
 
-        comments[i].className = comments[i].className + " test";
+        comments[i].className = comments[i].className + " shareddit";
 
 
       }
 
     }
   }
+  function addToPost(posts, name, genContent){
+      var post, i, flatList;
+      for(i = 0; i<posts.length; i++){
+          post = posts[i];
+          if (post.classList.contains('shareddit') && post.getElementsByClassName('sponsored-tagline').length && post.getElementsByClassName('title').length){}
+              flatList = post.getElementsByClassName('flat-list')[0];
+              flatList.innerHTML += "<li>"+genContent(post)+"</li>";
+              post.className += " " + name
+      }
+  }
+  function genXPost(post){
+      listingTitle = post.getElementsByTagName('a')[0].innerHTML;
+      listingLink = post.getElementsByTagName('a')[0].getAttribute('href');
 
+      if (listingLink.split('/')[1] === 'r') {
+        if (document.URL.split(':')[0] === 'https') {
+          listingLink = "https://www.reddit.com" + listingLink;
+        } else {
+          listingLink = "http://www.reddit.com" + listingLink;
+        }
+      }
+
+      listingLink = encodeURIComponent(listingLink);
+
+      listingSub = post.getElementsByClassName('comments')[0].getAttribute("href").split('/');
+
+      listingSub = "/r/" + listingSub[listingSub.indexOf('r') + 1];
+
+      listingTitle = encodeURIComponent(listingTitle + " (x-post " + listingSub + ")");
+
+      return "<a href=\"//www.reddit.com/submit?title=" + listingTitle + "&url=" + listingLink + "/" + dupeBlock + "\">x-post this link</a>";
+  }
   function generateXPosts(entries) {
 
-    var i = entries.length - 1;
-    var j = 0;
-    var dupeBlock = '/';
-    var listingTitle = '';
-    var listingLink = '';
-    var listingSub = '';
-    var xPost = '';
+    var i = entries.length - 1,
+        j = 0,
+        dupeBlock = '/',
+        listingTitle = '',
+        listingLink = '',
+        listingSub = '',
+        xPost = '';
 
     for (j = 0; j < Math.floor((Math.random() + 1) * 3); j++) {
       dupeBlock = dupeBlock + '/';
@@ -153,7 +184,7 @@
 
     for (i; i >= 0; i--) {
 
-      if (!entries[i].classList.contains('test') && !entries[i].getElementsByClassName('sponsored-tagline').length && entries[i].getElementsByClassName('title').length) {
+      if (!entries[i].classList.contains('shareddit') && !entries[i].getElementsByClassName('sponsored-tagline').length && entries[i].getElementsByClassName('title').length) {
 
         listingTitle = entries[i].getElementsByTagName('a')[0].innerHTML;
         listingLink = entries[i].getElementsByTagName('a')[0].getAttribute('href');
@@ -177,7 +208,7 @@
         xPost = "<li><a href=\"//www.reddit.com/submit?title=" + listingTitle + "&url=" + listingLink + "/" + dupeBlock + "\">x-post this link</a></li>";
 
         entries[i].getElementsByClassName('flat-list')[0].innerHTML = entries[i].getElementsByClassName('flat-list')[0].innerHTML + xPost;
-        entries[i].className = entries[i].className + " test";
+        entries[i].className = entries[i].className + " shareddit";
 
       }
 
@@ -187,8 +218,8 @@
 
   function main() {
 
-    generateXPosts($('.entry'));
-
+    //generateXPosts($('.entry'));
+    addToPost($('.entry'), "shareddit", genXPost)
     generateShareLinks($('.comment'));
 
   }

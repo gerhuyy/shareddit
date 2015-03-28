@@ -166,7 +166,7 @@
 
       listingTitle = encodeURIComponent(listingTitle + " (x-post " + listingSub + ")");
 
-      return "<a href=\"//www.reddit.com/submit?title=" + listingTitle + "&url=" + listingLink + "/" + dupeBlock + "\">x-post this link</a>";
+      return "<a href=\"//www.reddit.com/submit?title=" + listingTitle + "&url=" + listingLink + "/" /*+ dupeBlock*/ + "\">x-post this link</a>";
   }
   function generateXPosts(entries) {
 

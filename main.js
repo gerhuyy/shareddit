@@ -138,9 +138,9 @@ function generateShareDrop() {
         drop = node("select", {name:id, onclick: shareddit})
 
         drop("option", {value: "", selected:""}, "-- Select Destination --");
-        drop("option", {value: "bestof"}, "/r/bestof");
-        drop("option", {value: "nocontext"}, "/r/nocontext");
-        drop("option", {value: "retiredgif"}, "/r/retiredgif");
+        for(sub in sharableSubs){
+            drop("option", {value: sub}, "/r/" + sub);
+        }
         drop("option", {value: "other"}, "other...");
 
         comm.getElementsByClassName('flat-list')[0].appendChild(drop());

@@ -96,7 +96,7 @@ function shareddit() {
     if (!this.value) {
         return false;
     }
-    if(sharableSubs.indexOf(this.value) !== -1){
+    if(sharableSubs[this.value] !== undefined){
         title = sharableSubs[this.value](user, title);
         sub = this.value
     } else if (this.value === 'other') {

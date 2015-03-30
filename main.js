@@ -96,9 +96,9 @@ function shareddit() {
     if (!this.value) {
         return false;
     }
-    if(sharableSubs.indexOf(value) !== -1){
-        title = sharableSubs[value](user, title);
-        sub = value
+    if(sharableSubs.indexOf(this.value) !== -1){
+        title = sharableSubs[this.value](user, title);
+        sub = this.value
     } else if (this.value === 'other') {
         sub = prompt('Where would you like to share this?', '/r/');
         sub = sub.split('/');

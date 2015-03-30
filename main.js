@@ -1,23 +1,81 @@
+// ==UserScript==
+// @name        Shareddit
+// @namespace   gerhuyy
+// @include     http://www.reddit.com/*
+// @version     1
+// @grant       none
+// ==/UserScript==
+
 // nocontext hotlink - gerhuyy's edit
 // coded by /u/iGGNoRe
 
-(function () {
+function node(selector, options, text){
+    if(selector === undefined){
+        return this.top;
+    }
+    try{
+        element = document.createElement(selector); //object works in `createElement`
+    }
+    catch(e){try{
+        element = selector(); //object is a function returning a node
+    }
+    catch(e){
+        element = selector; //object is a node 
+    }}
+    for(item in options){
+        element[item] = options[item];
+    }
+    if(text !== undefined){
+        element.innerHTML += text
+    }
+    var self = {recent: element, top: element}
+    if(this.recent !== undefined && this.recent.nodeType !== undefined){
+        this.recent.appendChild(element);
+        self.top = this.top
+    }
+    
+    return function(){
+        return node.apply(self, arguments);
+    }
+}
 
-  function checkDocumentHeight(callback) {
+function addToPost(posts, name, genContent){
+    var post, i;
+    for(i = 0; i<posts.length; i++){
+        post = posts[i];
+        if (!post.classList.contains('shareddit') && !post.getElementsByClassName('sponsored-tagline').length && post.getElementsByClassName('title').length){
+            post.getElementsByClassName('flat-list')[0].appendChild(genContent(post));
+            post.className += " " + name;
+        }
+    }
+}
+
+function addToComment(comments, name, genContent){
+    var i, comment, comment_id;
+    for(var i = 0; i < comments.length; i++){
+        comment = comments[i]
+        if(!comment.classList.contains(name)){
+            comment.getElementsByClassName('flat-list')[0].appendChild(genContent(comment));
+            comment.className += " " + name;
+        }
+    }
+}
+
+function checkDocumentHeight(callback) {
     var lastHeight = document.body.clientHeight, newHeight, timer;
 
     (function run() {
-      newHeight = document.body.clientHeight;
-      if (lastHeight !== newHeight) {
-        callback();
-      }
-      lastHeight = newHeight;
-      timer = setTimeout(run, 200);
+        newHeight = document.body.clientHeight;
+        if (lastHeight !== newHeight) {
+            callback();
+        }
+        lastHeight = newHeight;
+        timer = setTimeout(run, 200);
     }());
 
-  }
+}
 
-  function shareddit() {
+function shareddit() {
 
     var comm = $('.id-' + this.name)[0];
 
@@ -33,49 +91,53 @@
 
     if (!this.value) {
 
-      return false;
+        return false;
 
     } else if (this.value === 'bestof') {
 
-      title = user + ' [DESCRIPTION]';
-      title = encodeURI(title);
-      sub = 'bestof';
+        title = user + ' [DESCRIPTION]';
+        title = encodeURI(title);
+        sub = 'bestof';
 
     } else if (this.value === 'nocontext') {
 
-      sub = 'nocontext';
+        sub = 'nocontext';
 
     } else if (this.value === 'retiredgif') {
 
-      title = user + ' retires [GIF]';
-      title = encodeURI(title);
-      sub = 'retiredgif';
+        title = user + ' retires [GIF]';
+        title = encodeURI(title);
+        sub = 'retiredgif';
 
     } else if (this.value === 'other') {
-      sub = prompt('Where would you like to share this?', '/r/');
-      sub = sub.split('/');
-      sub = sub[sub.length - 1];
+        sub = prompt('Where would you like to share this?', '/r/');
+        sub = sub.split('/');
+        sub = sub[sub.length - 1];
 
-      title = user + " said " + title;
+        title = user + " said " + title;
 
-      if (!sub.trim().length) {
-        return false;
-      }
+        if (!sub.trim().length) {
+            return false;
+        }
     }
 
     var context = prompt('How many parent comments to include for context?', 1);
+    
+    if (context === undefined){ //The user pressed 'cancel'. Presumably they misclicked on one of the options and don't want to share
+        return
+    }
     if (context < 0 || context === '' || context === null) {
 
-      context = 0;
+        context = 0;
 
     }
 
     var dest = '//www.reddit.com/r/' + sub + '/submit?title=' + title + '&url=' + permalink + '?context=' + context;
     window.location = dest;
 
-  }
+}
 
-  function generateShareDrop() {
+function generateShareDrop() {
 
     var comm = $('.id-' + this.name)[0];
     var id = '';
@@ -83,160 +145,68 @@
 
     if (!comm.classList.contains('shareddit-drop')) {
 
-      id = comm.getAttribute('data-fullname');
+        id = comm.getAttribute('data-fullname');
 
-      drop = document.createElement('select');
+        drop = node("select", {name:id, onclick: shareddit})
+        drop("option", {value: "", selected:""}, "-- Select Destination --");
+        drop("option", {value: "bestof"}, "/r/bestof");
+        drop("option", {value: "nocontext"}, "/r/nocontext");
+        drop("option", {value: "retiredgif"}, "/r/retiredgif");
+        drop("option", {value: "other"}, "other...");
 
-      drop.name = id;
-      drop.onclick = shareddit;
-      drop.innerHTML = "<option value='' selected>-- Select Destination --</option>" +
-                "<option value='bestof'>/r/bestof</option>" +
-                "<option value='nocontext'>/r/nocontext</option>" +
-                "<option value='retiredgif'>/r/retiredgif</option>" +
-                "<option value='other'>other...</option>";
+        comm.getElementsByClassName('flat-list')[0].appendChild(drop());
 
-      comm.getElementsByClassName('flat-list')[0].appendChild(drop);
+        comm.className += " shareddit-drop";
 
-      comm.className = comm.className + " shareddit-drop";
-
-      this.remove();
+        this.remove();
 
     }
 
-  }
+}
 
-  function generateShareLinks(comments) {
-    var i = comments.length - 1;
-    var id = '';
-    var link = '';
-    var listItem = '';
-
-    for (i; i >= 0; i--) {
-
-      if (!comments[i].classList.contains('shareddit')) {
-
-        id = comments[i].getAttribute('data-fullname');
-
-        listItem = document.createElement('li');
-        link = document.createElement('a');
-
-        link.name = id;
-        link.onclick = generateShareDrop;
-        link.href = 'javascript:void(0)';
-        link.innerHTML = "shareddit";
-
-        listItem.appendChild(link);
-
-        comments[i].getElementsByClassName('flat-list')[0].appendChild(listItem);
-
-        comments[i].className = comments[i].className + " shareddit";
-
-
-      }
-
-    }
-  }
-  function addToPost(posts, name, genContent){
-      var post, i, flatList;
-      for(i = 0; i<posts.length; i++){
-          post = posts[i];
-          if (post.classList.contains('shareddit') && post.getElementsByClassName('sponsored-tagline').length && post.getElementsByClassName('title').length){}
-              flatList = post.getElementsByClassName('flat-list')[0];
-              flatList.innerHTML += "<li>"+genContent(post)+"</li>";
-              post.className += " " + name
-      }
-  }
-  function genXPost(post){
-      listingTitle = post.getElementsByTagName('a')[0].innerHTML;
-      listingLink = post.getElementsByTagName('a')[0].getAttribute('href');
-
-      if (listingLink.split('/')[1] === 'r') {
+function genShareLink(comment){
+   return node("li")("a", {name:comment.getAttribute('data-fullname'),
+                           onclick: generateShareDrop,
+                           href: "javascript:void(0)"},
+                    "shareddit")();
+}
+function genXPost(post){
+    var listingTitle = post.getElementsByTagName('a')[0].innerHTML,
+        listingLink = post.getElementsByTagName('a')[0].getAttribute('href'),
+        listingSub = post.getElementsByClassName('comments')[0].getAttribute("href").split('/');
+    console.log(listingTitle, listingLink, listingSub)
+    if (listingLink.split('/')[1] === 'r') {
         if (document.URL.split(':')[0] === 'https') {
-          listingLink = "https://www.reddit.com" + listingLink;
-        } else {
-          listingLink = "http://www.reddit.com" + listingLink;
-        }
-      }
-
-      listingLink = encodeURIComponent(listingLink);
-
-      listingSub = post.getElementsByClassName('comments')[0].getAttribute("href").split('/');
-
-      listingSub = "/r/" + listingSub[listingSub.indexOf('r') + 1];
-
-      listingTitle = encodeURIComponent(listingTitle + " (x-post " + listingSub + ")");
-
-      return "<a href=\"//www.reddit.com/submit?title=" + listingTitle + "&url=" + listingLink + "/" /*+ dupeBlock*/ + "\">x-post this link</a>";
-  }
-  function generateXPosts(entries) {
-
-    var i = entries.length - 1,
-        j = 0,
-        dupeBlock = '/',
-        listingTitle = '',
-        listingLink = '',
-        listingSub = '',
-        xPost = '';
-
-    for (j = 0; j < Math.floor((Math.random() + 1) * 3); j++) {
-      dupeBlock = dupeBlock + '/';
-    }
-
-    for (i; i >= 0; i--) {
-
-      if (!entries[i].classList.contains('shareddit') && !entries[i].getElementsByClassName('sponsored-tagline').length && entries[i].getElementsByClassName('title').length) {
-
-        listingTitle = entries[i].getElementsByTagName('a')[0].innerHTML;
-        listingLink = entries[i].getElementsByTagName('a')[0].getAttribute('href');
-
-        if (listingLink.split('/')[1] === 'r') {
-          if (document.URL.split(':')[0] === 'https') {
             listingLink = "https://www.reddit.com" + listingLink;
-          } else {
+        } else {
             listingLink = "http://www.reddit.com" + listingLink;
-          }
         }
-
-        listingLink = encodeURIComponent(listingLink);
-
-        listingSub = entries[i].getElementsByClassName('comments')[0].getAttribute("href").split('/');
-
-        listingSub = "/r/" + listingSub[listingSub.indexOf('r') + 1];
-
-        listingTitle = encodeURIComponent(listingTitle + " (x-post " + listingSub + ")");
-
-        xPost = "<li><a href=\"//www.reddit.com/submit?title=" + listingTitle + "&url=" + listingLink + "/" + dupeBlock + "\">x-post this link</a></li>";
-
-        entries[i].getElementsByClassName('flat-list')[0].innerHTML = entries[i].getElementsByClassName('flat-list')[0].innerHTML + xPost;
-        entries[i].className = entries[i].className + " shareddit";
-
-      }
-
     }
 
-  }
+    listingLink = encodeURIComponent(listingLink);
 
-  function main() {
+    listingSub = "/r/" + listingSub[listingSub.indexOf('r') + 1];
 
-    //generateXPosts($('.entry'));
+    listingTitle = encodeURIComponent(listingTitle + " (x-post " + listingSub + ")");
+    return node("li", {id:"first",classList:"first"})("a", {href:"//www.reddit.com/submit?title=" + listingTitle + "&url=" + listingLink + "/"}, "x-post this link")();
+}
+
+function main() {
     addToPost($('.entry'), "shareddit", genXPost)
-    generateShareLinks($('.comment'));
+    addToComment($('.comment'), "shareddit", genShareLink)
+}
 
-  }
+var $ = document.querySelectorAll.bind(document);
 
-  var $ = document.querySelectorAll.bind(document);
+"(http|https)://www.reddit.com/submit(?.+|#.*|)$"
 
-    "(http|https)://www.reddit.com/submit(?.+|#.*|)$"
-
-  if (document.URL.split('?')[0].split(':')[1] === '//www.reddit.com/submit') {
+if (document.URL.split('?')[0].split(':')[1] === '//www.reddit.com/submit') {
 
     $('#url')[0].value = $('#url')[0].value.substr(0, $('#url')[0].value.length - 8);
 
-  } else {
+} else {
 
     main();
     checkDocumentHeight(main);
 
-  }
-
-}());
+}

@@ -1,11 +1,3 @@
-// ==UserScript==
-// @name        Shareddit
-// @namespace   gerhuyy
-// @include     http://www.reddit.com/*
-// @version     1
-// @grant       none
-// ==/UserScript==
-
 // nocontext hotlink - gerhuyy's edit
 // coded by /u/iGGNoRe
 
@@ -75,6 +67,18 @@ function checkDocumentHeight(callback) {
 
 }
 
+sharableSubs = {
+    bestof: function(user, title){
+        return user + " [DESCRIPTION]";
+    },
+    nocontext: function(user, title){
+        return title;
+    },
+    retiredgif: function(user, title){
+        return user + " retires [GIF]";
+    },
+};
+
 function shareddit() {
 
     var comm = $('.id-' + this.name)[0];
@@ -90,25 +94,11 @@ function shareddit() {
     var sub = '';
 
     if (!this.value) {
-
         return false;
-
-    } else if (this.value === 'bestof') {
-
-        title = user + ' [DESCRIPTION]';
-        title = encodeURI(title);
-        sub = 'bestof';
-
-    } else if (this.value === 'nocontext') {
-
-        sub = 'nocontext';
-
-    } else if (this.value === 'retiredgif') {
-
-        title = user + ' retires [GIF]';
-        title = encodeURI(title);
-        sub = 'retiredgif';
-
+    }
+    if(sharableSubs.indexOf(value) !== -1){
+        title = sharableSubs[value](user, title);
+        sub = value
     } else if (this.value === 'other') {
         sub = prompt('Where would you like to share this?', '/r/');
         sub = sub.split('/');
@@ -138,16 +128,15 @@ function shareddit() {
 }
 
 function generateShareDrop() {
-
-    var comm = $('.id-' + this.name)[0];
-    var id = '';
-    var drop = '';
-
+    var comm = $('.id-' + this.name)[0],
+        id,
+        drop;
     if (!comm.classList.contains('shareddit-drop')) {
 
         id = comm.getAttribute('data-fullname');
 
         drop = node("select", {name:id, onclick: shareddit})
+
         drop("option", {value: "", selected:""}, "-- Select Destination --");
         drop("option", {value: "bestof"}, "/r/bestof");
         drop("option", {value: "nocontext"}, "/r/nocontext");

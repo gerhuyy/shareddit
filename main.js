@@ -112,9 +112,9 @@ function shareddit() {
     }
 
     var context = prompt('How many parent comments to include for context?', 1);
-    
+    console.log(context)
     if (context === undefined){ //The user pressed 'cancel'. Presumably they misclicked on one of the options and don't want to share
-        return
+        return false;
     }
     if (context < 0 || context === '' || context === null) {
 
@@ -163,7 +163,6 @@ function genXPost(post){
     var listingTitle = post.getElementsByTagName('a')[0].innerHTML,
         listingLink = post.getElementsByTagName('a')[0].getAttribute('href'),
         listingSub = post.getElementsByClassName('comments')[0].getAttribute("href").split('/');
-    console.log(listingTitle, listingLink, listingSub)
     if (listingLink.split('/')[1] === 'r') {
         if (document.URL.split(':')[0] === 'https') {
             listingLink = "https://www.reddit.com" + listingLink;
@@ -186,8 +185,6 @@ function main() {
 }
 
 var $ = document.querySelectorAll.bind(document);
-
-"(http|https)://www.reddit.com/submit(?.+|#.*|)$"
 
 if (document.URL.split('?')[0].split(':')[1] === '//www.reddit.com/submit') {
 
